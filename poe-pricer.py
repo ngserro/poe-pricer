@@ -9,6 +9,7 @@ import argparse #
 from termcolor import colored, cprint #
 from pprint import pprint
 from tabulate import tabulate #
+from collections import Counter
 
 # TODO: Add number of links of item
 
@@ -35,10 +36,15 @@ def request (URL,cookie):
 # Function to iterate through pricesPoeNinja and uptade item with price
 def get_item_price( item, pricesPoeNinja ):
     for itemPoeNinja in pricesPoeNinja:
-        if itemPoeNinja['name'] == item['name']:
-            item['chaosValue'] = itemPoeNinja['chaosValue']
-            item['exaltedValue'] = itemPoeNinja['exaltedValue']
-            return item
+        if item['links'] < 5:
+            if itemPoeNinja['name'] == item['name'] and itemPoeNinja['links'] == 0 and get_frame_type(itemPoeNinja['itemClass']) == item['frameType']:
+                break
+        else:
+            if itemPoeNinja['name'] == item['name'] and itemPoeNinja['links'] == item['links'] and get_frame_type(itemPoeNinja['itemClass']) == item['frameType']:
+                break
+    item['chaosValue'] = itemPoeNinja['chaosValue']
+    item['exaltedValue'] = itemPoeNinja['exaltedValue']
+    return item
 
 # Return item type
 def get_frame_type(frameType):
@@ -49,6 +55,17 @@ def get_frame_type(frameType):
     if frameType == 9: return "Relic"
     return frameType
 
+# Return number of links
+def get_links(item):
+    socketGroups=[0,0,0,0,0,0]
+    for socket in item['sockets']:
+        if socket['group'] == 0: socketGroups[0]+= 1
+        if socket['group'] == 1: socketGroups[1]+= 1
+        if socket['group'] == 2: socketGroups[2]+= 1
+        if socket['group'] == 3: socketGroups[3]+= 1
+        if socket['group'] == 4: socketGroups[4]+= 1
+        if socket['group'] == 5: socketGroups[5]+= 1
+    return max(socketGroups)
 
 # Main
 def main(argv):
@@ -108,12 +125,13 @@ def main(argv):
                 "typeLine": itemPrivateStash['typeLine'], 
                 "tabIndex":  tabIndex,
                 "frameType":  get_frame_type(itemPrivateStash['frameType']),
+                "links": get_links(itemPrivateStash),
                 }
                 myItems.append(item)
 
     print ("Finished processing all tabs                                                      ",end='\r')
     print ("")
-
+    
     # Update item prices
     print ("Updating item prices... ",end="")
     sys.stdout.flush()
