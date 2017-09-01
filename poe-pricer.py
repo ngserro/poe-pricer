@@ -53,9 +53,6 @@ def get_frame_type(frameType):
 # Main
 def main(argv):
 
-    print(time.strftime("%Y-%m-%d"))
-    sys.exit()
-
     parser = argparse.ArgumentParser()
     parser.add_argument("POESESSID", help="Use your POESESSID")
     parser.add_argument("account", help="Your POE account name")
